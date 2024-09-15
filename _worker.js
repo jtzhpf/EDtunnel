@@ -1346,38 +1346,38 @@ function getConfig(userIDs, hostName) {
 const HttpPort = new Set([80, 8080, 8880, 2052, 2086, 2095, 2082]);
 const HttpsPort = new Set([443, 8443, 2053, 2096, 2087, 2083]);
 
-function GenSub(ไอดีผู้ใช้_เส้นทาง, ชื่อโฮสต์) {
-	const อาร์เรย์ไอดีผู้ใช้ = ไอดีผู้ใช้_เส้นทาง.includes(',') ? ไอดีผู้ใช้_เส้นทาง.split(',') : [ไอดีผู้ใช้_เส้นทาง];
+function GenSub(userID_Path, hostName) {
+	const userIDArray = userID_Path.includes(',') ? userID_Path.split(',') : [userID_Path];
 	const randomPath = () => '/' + Math.random().toString(36).substring(2, 15) + '?ed=2048';
-	const ส่วนUrlทั่วไปHttp = `?encryption=none&security=none&fp=random&type=ws&host=${ชื่อโฮสต์}&path=${encodeURIComponent(randomPath())}#`;
-	const ส่วนUrlทั่วไปHttps = `?encryption=none&security=tls&sni=${ชื่อโฮสต์}&fp=random&type=ws&host=${ชื่อโฮสต์}&path=%2F%3Fed%3D2048#`;
+	const commonUrlPart_http = `?encryption=none&security=none&fp=random&type=ws&host=${hostName}&path=${encodeURIComponent(randomPath())}#`;
+	const commonUrlPart_https = `?encryption=none&security=tls&sni=${hostName}&fp=random&type=ws&host=${hostName}&path=%2F%3Fed%3D2048#`;
 
-	const ผลลัพธ์ = อาร์เรย์ไอดีผู้ใช้.flatMap((ไอดีผู้ใช้) => {
-		const PartHttp = Array.from(HttpPort).flatMap((พอร์ต) => {
-			if (!ชื่อโฮสต์.includes('pages.dev')) {
-				const ส่วนUrl = `${ชื่อโฮสต์}-HTTP-${พอร์ต}`;
-				const protocolหลักHttp = atob(pt) + '://' + ไอดีผู้ใช้ + atob(at) + ชื่อโฮสต์ + ':' + พอร์ต + ส่วนUrlทั่วไปHttp + ส่วนUrl;
+	const output = userIDArray.flatMap((userID) => {
+		const PartHttp = Array.from(HttpPort).flatMap((port) => {
+			if (!hostName.includes('pages.dev')) {
+				const urlPart = `${hostName}-HTTP-${port}`;
+				const protocolMainHttp = atob(pt) + '://' + userID + atob(at) + hostName + ':' + port + commonUrlPart_http + urlPart;
 				return proxyIPs.flatMap((proxyIP) => {
-					const protocolรองHttp = atob(pt) + '://' + ไอดีผู้ใช้ + atob(at) + proxyIP + ':' + พอร์ต + ส่วนUrlทั่วไปHttp + ส่วนUrl + '-' + proxyIP + '-' + atob(ed);
-					return [protocolหลักHttp, protocolรองHttp];
+					const protocolSecHttp = atob(pt) + '://' + userID + atob(at) + proxyIP + ':' + port + commonUrlPart_http + urlPart + '-' + proxyIP + '-' + atob(ed);
+					return [protocolMainHttp, protocolSecHttp];
 				});
 			}
 			return [];
 		});
 
-		const PartHttps = Array.from(HttpsPort).flatMap((พอร์ต) => {
-			const ส่วนUrl = `${ชื่อโฮสต์}-HTTPS-${พอร์ต}`;
-			const protocolหลักHttps = atob(pt) + '://' + ไอดีผู้ใช้ + atob(at) + ชื่อโฮสต์ + ':' + พอร์ต + ส่วนUrlทั่วไปHttps + ส่วนUrl;
+		const PartHttps = Array.from(HttpsPort).flatMap((port) => {
+			const urlPart = `${hostName}-HTTPS-${port}`;
+			const protocolMainHttps = atob(pt) + '://' + userID + atob(at) + hostName + ':' + port + commonUrlPart_https + urlPart;
 			return proxyIPs.flatMap((proxyIP) => {
-				const protocolรองHttps = atob(pt) + '://' + ไอดีผู้ใช้ + atob(at) + proxyIP + ':' + พอร์ต + ส่วนUrlทั่วไปHttps + ส่วนUrl + '-' + proxyIP + '-' + atob(ed);
-				return [protocolหลักHttps, protocolรองHttps];
+				const protocolSecHttps = atob(pt) + '://' + userID + atob(at) + proxyIP + ':' + port + commonUrlPart_https + urlPart + '-' + proxyIP + '-' + atob(ed);
+				return [protocolMainHttps, protocolSecHttps];
 			});
 		});
 
 		return [...PartHttp, ...PartHttps];
 	});
 
-	return ผลลัพธ์.join('\n');
+	return output.join('\n');
 }
 
 const hostnames = [
